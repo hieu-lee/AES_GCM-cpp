@@ -129,7 +129,7 @@
   <ItemGroup>
     <ClCompile Include="AES128.cpp" />
     <ClCompile Include="AES128GCM.cpp" />
-    <ClCompile Include="AES_GCM128.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="GcmOutput.cpp" />
     <ClCompile Include="TupleU128.cpp" />
   </ItemGroup>
