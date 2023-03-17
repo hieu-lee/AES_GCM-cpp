@@ -4,7 +4,8 @@
 
 int main()
 {
-    byte K[16];
+    AES128GCM::test();
+    /*byte K[16];
     byte IV[12];
     byte* P = new byte[1000000];
     byte A[24];
@@ -33,7 +34,7 @@ int main()
 
     long long duration = (std::chrono::high_resolution_clock::now() - start).count();
 
-    std::cout << duration << std::endl;
+    std::cout << duration << std::endl;*/
 
 }
 

@@ -39,6 +39,16 @@ void AES128GCM::inc32(byte* x)
 
 void AES128GCM::rightShift(byte* v)
 {
+    //ulong* v_long = (ulong*)v;
+    //ulong highestBit = *v_long & 1;
+    //*v_long >>= 1;
+    //v_long++;
+    //*v_long >>= 1;
+    //if (highestBit)
+    //{
+    //    *v_long |= (highestBit << 63);
+    //}
+
     byte i;
     byte lowestBit, highestBit;
     lowestBit = *v & 1;
@@ -49,7 +59,7 @@ void AES128GCM::rightShift(byte* v)
     {
         lowestBit = *v & 1;
         *v >>= 1;
-        if (highestBit == 1)
+        if (highestBit)
         {
             *v |= 0x80;
         }
@@ -77,8 +87,12 @@ void AES128GCM::concateBlock(ulong lengthA, ulong lengthB, byte* output)
     for (byte i = 0; i < 4; i++)
     {
         byte a = 7 - i, b = 8 + i, c = 15 - i;
-        (output[i], output[a]) = (output[a], output[i]);
-        (output[b], output[c]) = (output[c], output[b]);
+        byte tmp = output[a];
+        output[a] = output[i];
+        output[i] = tmp;
+        tmp = output[c];
+        output[c] = output[b];
+        output[b] = tmp;
     }
 }
 
@@ -89,7 +103,12 @@ void AES128GCM::gMult(byte* X, byte* Y, byte* output)
 
     int i, j, lsb;
 
-    byte Z[16];
+    byte Z[16] = {
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0
+    };
 
     u128Copy(Y, V);
 
@@ -104,7 +123,7 @@ void AES128GCM::gMult(byte* X, byte* Y, byte* output)
             lsb = V[15] & 0x01;
             rightShift(V);
 
-            if (lsb == 1)
+            if (lsb)
             {
                 *V ^= 0xe1;
             }
@@ -288,6 +307,7 @@ byte* AES128GCM::aes128gcmD(byte* IV, byte* _C, byte* K, byte* _A, byte* _T, int
     }
     byte S[16];
     gHash(H, tmp, l >> 4, S);
+    delete[] tmp;
     *(uint*)(Y0 + 12) = 16777216;
     scan = IV;
     *(ulong*)Y0 = *(ulong*)scan;
@@ -298,7 +318,9 @@ byte* AES128GCM::aes128gcmD(byte* IV, byte* _C, byte* K, byte* _A, byte* _T, int
     if ((*(ulong*)T != *(ulong*)scan) || (*(ulong*)(T + 8) != *(ulong*)(scan + 8)))
     {
         cout << "FAIL" << endl;
-        return { 0 };
+        for (int i = 0; i < lenC; i++) {
+            P[i] = 0;
+        }
     }
     return P;
 }
@@ -334,9 +356,8 @@ void AES128GCM::test()
     GcmOutput resE = aes128gcmE(IV, P, A, K, 48, 48);
 
     byte* C = resE.cipherText;
-    byte* T = resE.tag;
 
-    byte* resD = aes128gcmD(IV, C, K, A, T, 48, 48);
+    byte* resD = aes128gcmD(IV, C, K, A, resE.tag, 48, 48);
 
     cout << "Ciphertext result:" << endl;
     printArray(C, 48);
@@ -349,4 +370,7 @@ void AES128GCM::test()
 
     cout << "\nPlaintext result:" << endl;
     printArray(resD, 48);
+
+    delete[] C;
+    delete[] resD;
 }

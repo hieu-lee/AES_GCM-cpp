@@ -3,5 +3,7 @@
 GcmOutput::GcmOutput(byte* _cipherText, byte* _tag)
 {
 	this->cipherText = _cipherText;
-	this->tag = _tag;
+	for (byte i = 0; i < 16; i++) {
+		this->tag[i] = _tag[i];
+	}
 }
