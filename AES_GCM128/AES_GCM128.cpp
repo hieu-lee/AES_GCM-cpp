@@ -34,9 +34,9 @@ int main()
 
     GcmOutput _ = AES128GCM::aes128gcmE(IV, P, A, K, 24, 1000000);
 
-    auto duration = std::chrono::high_resolution_clock::now() - start;
+    long long duration = (std::chrono::high_resolution_clock::now() - start).count();
 
-    std::cout << duration.count() << std::endl;
+    std::cout << duration << std::endl;
 
 }
 
