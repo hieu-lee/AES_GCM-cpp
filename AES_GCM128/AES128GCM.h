@@ -23,4 +23,5 @@ public:
 	static GcmOutput aes128gcmE(byte* IV, byte* _P, byte* _A, byte* K, int lenA, int lenP);
 	static byte* aes128gcmD(byte* IV, byte* _C, byte* K, byte* _A, byte* _T, int lenA, int lenC);
 	static void test();
+	static void testTag();
 };

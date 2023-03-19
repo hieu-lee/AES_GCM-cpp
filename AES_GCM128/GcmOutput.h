@@ -9,5 +9,6 @@ struct GcmOutput
 
 public:
 	GcmOutput(byte* _cipherText, byte* _tag);
+	~GcmOutput();
 };
 

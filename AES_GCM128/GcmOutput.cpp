@@ -7,3 +7,8 @@ GcmOutput::GcmOutput(byte* _cipherText, byte* _tag)
 		this->tag[i] = _tag[i];
 	}
 }
+
+GcmOutput::~GcmOutput()
+{
+	delete[] this->cipherText;
+}
