@@ -30,5 +30,6 @@ void testPerformance() {
 int main()
 {
     testPerformance();
+    return 0;
 }
 
