@@ -246,6 +246,7 @@ GcmOutput AES128GCM::aes128gcmE(byte* IV, byte* _P, byte* _A, byte* K, int lenA,
 	}
 	byte S[16];
 	gHash(H, tmp, l >> 4, S);
+	delete[] tmp;
 	*(uint*)(Y0 + 12) = 16777216;
 	scan = IV;
 	*(ulong*)Y0 = *(ulong*)scan;
