@@ -6,6 +6,8 @@
 class AES128GCM
 {
 	static const int twoP32 = 4294967;
+	static const ulong getLastBits = 0x101010101010101;
+	static const ulong setFirstBits = 0x7F7F7F7F7F7F7F7F;
 
 private:
 	static void u128Copy(byte* src, byte* dst);

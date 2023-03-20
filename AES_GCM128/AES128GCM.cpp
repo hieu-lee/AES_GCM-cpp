@@ -39,33 +39,24 @@ void AES128GCM::inc32(byte* x)
 
 void AES128GCM::rightShift(byte* v)
 {
-	//ulong* v_long = (ulong*)v;
-	//ulong highestBit = *v_long & 1;
-	//*v_long >>= 1;
-	//v_long++;
-	//*v_long >>= 1;
-	//if (highestBit)
-	//{
-	//    *v_long |= (highestBit << 63);
-	//}
+	ulong temp;
+	ulong* vLong = (ulong*)v;
+	temp = getLastBits & *vLong;
+	temp <<= 15;
+	byte highestBit = v[7] & 1;
+	*vLong >>= 1;
+	*vLong &= setFirstBits;
+	*vLong |= temp;
 
-	byte i;
-	byte lowestBit, highestBit;
-	lowestBit = *v & 1;
-	*v >>= 1;
-	v++;
-	highestBit = lowestBit;
-	for (i = 1; i < 16; i++)
-	{
-		lowestBit = *v & 1;
-		*v >>= 1;
-		if (highestBit)
-		{
-			*v |= 0x80;
-		}
-		v++;
-		highestBit = lowestBit;
-	}
+	vLong++;
+
+	temp = getLastBits & *vLong;
+	temp <<= 15;
+	*vLong >>= 1;
+	*vLong &= setFirstBits;
+	*vLong |= temp;
+	v = (byte*)vLong;
+	if (highestBit) v[0] |= 0x80;
 }
 
 void AES128GCM::xorBlock128(byte* dst, byte* src)
