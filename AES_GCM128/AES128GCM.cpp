@@ -250,6 +250,7 @@ GcmOutput AES128GCM::aes128gcmE(byte* IV, byte* _P, byte* _A, byte* K, int lenA,
 byte* AES128GCM::aes128gcmD(byte* IV, byte* _C, byte* K, byte* _A, byte* _T, int lenA, int lenC)
 {
 	byte key[16];
+	int i;
 	int last_len_a = ((lenA & 15) == 0) ? 16 : (lenA & 15);
 	int last_len_c = ((lenC & 15) == 0) ? 16 : (lenC & 15);
 	int len_a = (last_len_a == 16) ? (lenA >> 4) : ((lenA >> 4) + 1);
@@ -257,9 +258,7 @@ byte* AES128GCM::aes128gcmD(byte* IV, byte* _C, byte* K, byte* _A, byte* _T, int
 	byte* P = new byte[lenC];
 	byte T[16];
 	byte H[16];
-	byte ZeroU128[16];
-	*(ulong*)ZeroU128 = 0;
-	*(ulong*)(ZeroU128 + 8) = 0;
+	byte ZeroU128[16] = { 0 };
 	u128Copy(K, key);
 	AES128::aes128EncryptPtr(ZeroU128, key, H);
 	byte Y0[16];
@@ -278,16 +277,16 @@ byte* AES128GCM::aes128gcmD(byte* IV, byte* _C, byte* K, byte* _A, byte* _T, int
 	len_c <<= 4;
 	int l = len_a + len_c + 16;
 	byte* tmp = new byte[l];
-	for (int i = 0; i < lenA; i++)
+	for (i = 0; i < lenA; i++)
 	{
 		tmp[i] = _A[i];
 	}
-	for (int i = len_a; i < len_a + lenC; i++)
+	for (i = len_a; i < len_a + lenC; i++)
 	{
 		tmp[i] = _C[i - len_a];
 	}
 	int c = l - 16;
-	for (int i = c; i < l; i++)
+	for (i = c; i < l; i++)
 	{
 		tmp[i] = temp[i - c];
 	}
@@ -304,7 +303,7 @@ byte* AES128GCM::aes128gcmD(byte* IV, byte* _C, byte* K, byte* _A, byte* _T, int
 	if ((*(ulong*)T != *(ulong*)scan) || (*(ulong*)(T + 8) != *(ulong*)(scan + 8)))
 	{
 		cout << "FAIL" << endl;
-		for (int i = 0; i < lenC; i++) {
+		for (i = 0; i < lenC; i++) {
 			P[i] = 0;
 		}
 	}
