@@ -75,10 +75,13 @@ void AES128GCM::concateBlock(ulong lengthA, ulong lengthB, byte* output)
 	*pOutput = (lengthA << 3);
 	pOutput++;
 	*pOutput = (lengthB << 3);
-	for (byte i = 0; i < 4; i++)
+	byte i, a, b, c, tmp;
+	for (i = 0; i < 4; i++)
 	{
-		byte a = 7 - i, b = 8 + i, c = 15 - i;
-		byte tmp = output[a];
+		a = 7 - i;
+		b = 8 + i;
+		c = 15 - i;
+		tmp = output[a];
 		output[a] = output[i];
 		output[i] = tmp;
 		tmp = output[c];
@@ -127,16 +130,13 @@ void AES128GCM::gHash(byte* H, byte* X, int lenX, byte* output)
 	byte temp[16];
 	u128Copy(X, temp);
 	byte Y[16];
+	int i;
 
 	gMult(H, temp, Y);
-	for (int i = 1; i < lenX; i++)
+	for (i = 1; i < lenX; i++)
 	{
 		c = i << 4;
-		for (int j = 0; j < 16; j++)
-		{
-			temp[j] = X[c + j];
-		}
-		xorBlock128(Y, temp);
+		xorBlock128(Y, X + c);
 		gMult(Y, H, Y);
 	}
 
@@ -157,22 +157,29 @@ void AES128GCM::gCtr128(byte* K, byte* ICB, byte* X, byte* tag)
 void AES128GCM::gCtr(byte* K, byte* ICB, byte* X, int lenX, int lastLenX, byte* cipher)
 {
 	byte CB[16];
-	if (lenX == 0)
+	if (!lenX)
 	{
 		return;
 	}
 	int i, j, c;
 	byte tmp[16];
+	ulong* cipherLong;
+	ulong* XLong;
+	ulong* tmpLong;
 	u128Copy(ICB, CB);
 
 	for (i = 0; i < lenX - 1; i++)
 	{
 		c = i << 4;
 		AES128::aes128EncryptPtr(CB, K, tmp);
-		for (j = 0; j < 16; j++)
-		{
-			cipher[c + j] = tmp[j] ^ X[c + j];
-		}
+		cipherLong = (ulong*)(cipher + c);
+		XLong = (ulong*)(X + c);
+		tmpLong = (ulong*)tmp;
+		*cipherLong = *tmpLong ^ *XLong;
+		cipherLong++;
+		tmpLong++;
+		XLong++;
+		*cipherLong = *tmpLong ^ *XLong;
 		inc32(CB);
 	}
 
@@ -180,14 +187,15 @@ void AES128GCM::gCtr(byte* K, byte* ICB, byte* X, int lenX, int lastLenX, byte* 
 	c = (lenX - 1) << 4;
 	for (i = 0; i < lastLenX; i++)
 	{
-		cipher[c + i] = (byte)(tmp[i] ^ X[c + i]);
+		cipher[c + i] = tmp[i] ^ X[c + i];
 	}
 }
 
 void AES128GCM::printArray(byte* arr, int length)
 {
 	string s = "[";
-	for (int i = 0; i < length; i++) {
+	for (int i = 0; i < length; i++) 
+	{
 		s.append(to_string(arr[i]) + ", ");
 	}
 	s.append("]\n");
@@ -230,11 +238,7 @@ GcmOutput AES128GCM::aes128gcmE(byte* IV, byte* _P, byte* _A, byte* K, int lenA,
 	{
 		tmp[i] = C[i - len_a];
 	}
-	int c = l - 16;
-	for (i = c; i < l; i++)
-	{
-		tmp[i] = temp[i - c];
-	}
+	u128Copy(temp, tmp + l - 16);
 	byte S[16];
 	gHash(H, tmp, l >> 4, S);
 	delete[] tmp;
@@ -285,11 +289,7 @@ byte* AES128GCM::aes128gcmD(byte* IV, byte* _C, byte* K, byte* _A, byte* _T, int
 	{
 		tmp[i] = _C[i - len_a];
 	}
-	int c = l - 16;
-	for (i = c; i < l; i++)
-	{
-		tmp[i] = temp[i - c];
-	}
+	u128Copy(temp, tmp + l - 16);
 	byte S[16];
 	gHash(H, tmp, l >> 4, S);
 	delete[] tmp;

@@ -109,7 +109,8 @@ void AES128::invSubAndShiftRows(byte* state)
 void AES128::mixColumns(byte* state)
 {
 	byte t, u, i, c, d, e, f;
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 4; i++) 
+	{
 		c = i << 2;
 		d = c + 1;
 		e = c + 2;
