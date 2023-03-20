@@ -92,7 +92,7 @@ void AES128GCM::gMult(byte* X, byte* Y, byte* output)
 
 	byte V[16];
 
-	int i, j, lsb;
+	byte i, j, lsb;
 
 	byte Z[16] = { 0 };
 

@@ -47,7 +47,7 @@ const byte AES128::RCon[10] = {
 
 byte AES128::xTime(byte a)
 {
-	return (byte)(((a & 0x80) != 0) ? ((a << 1) ^ 0x1b) : (a << 1));
+	return ((a & 0x80) != 0) ? ((a << 1) ^ 0x1b) : (a << 1);
 }
 
 void AES128::u128Copy(byte* src, byte* dst)
@@ -108,30 +108,31 @@ void AES128::invSubAndShiftRows(byte* state)
 
 void AES128::mixColumns(byte* state)
 {
-	byte t, u;
-	int i, c;
+	byte t, u, i, c, d, e, f;
 	for (i = 0; i < 4; i++) {
 		c = i << 2;
-		int d = c + 1, e = c + 2, f = c + 3;
-		t = (byte)(state[c] ^ state[d] ^ state[e] ^ state[f]);
+		d = c + 1;
+		e = c + 2;
+		f = c + 3;
+		t = state[c] ^ state[d] ^ state[e] ^ state[f];
 		u = state[c];
-		state[c] ^= (byte)(t ^ xTime((byte)(state[c] ^ state[d])));
-		state[d] ^= (byte)(t ^ xTime((byte)(state[d] ^ state[e])));
-		state[e] ^= (byte)(t ^ xTime((byte)(state[e] ^ state[f])));
-		state[f] ^= (byte)(t ^ xTime((byte)(state[f] ^ u)));
+		state[c] ^= t ^ xTime(state[c] ^ state[d]);
+		state[d] ^= t ^ xTime(state[d] ^ state[e]);
+		state[e] ^= t ^ xTime(state[e] ^ state[f]);
+		state[f] ^= t ^ xTime(state[f] ^ u);
 	}
 }
 
 void AES128::invMixColumns(byte* state)
 {
-	byte u, v;
-	int i, c;
+	byte u, v, i, c;
+	byte* ptr;
 	for (i = 0; i < 4; i++)
 	{
 		c = i << 2;
-		byte* ptr = state + c;
-		u = xTime(xTime((byte)(*ptr ^ *(ptr + 2))));
-		v = xTime(xTime((byte)(*(ptr + 1) ^ *(ptr + 3))));
+		ptr = state + c;
+		u = xTime(xTime((*ptr ^ *(ptr + 2))));
+		v = xTime(xTime(*(ptr + 1) ^ *(ptr + 3)));
 		*ptr ^= u;
 		ptr++;
 		*ptr ^= v;
@@ -155,6 +156,7 @@ void AES128::addRoundKey(byte* state, byte* roundKey)
 
 void AES128::keyExpansion(byte* roundKey, int round)
 {
+	byte i;
 	byte res[16];
 	byte* roundKeyCopy = roundKey;
 	byte temp[4] = {
@@ -167,9 +169,9 @@ void AES128::keyExpansion(byte* roundKey, int round)
 	byte* ptr = res + 4;
 	roundKey += 4;
 	*res ^= RCon[round - 1];
-	for (int i = 4; i < 16; i++)
+	for (i = 4; i < 16; i++)
 	{
-		*ptr = (byte)(*(ptr - 4) ^ *roundKey);
+		*ptr = *(ptr - 4) ^ *roundKey;
 		ptr++;
 		roundKey++;
 	}
@@ -181,7 +183,8 @@ void AES128::invKeyExpansion(byte* roundKey, int round)
 	byte res[16];
 	byte* ptr = res + 4;
 	byte* roundKeyCopy = roundKey;
-	for (byte i = 4; i < 16; i++)
+	byte i;
+	for (i = 4; i < 16; i++)
 	{
 		*ptr = *roundKey ^ *(roundKey + 4);
 		ptr++;
