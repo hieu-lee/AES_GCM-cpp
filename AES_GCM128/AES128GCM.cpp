@@ -105,7 +105,7 @@ void AES128GCM::gMult(byte* X, byte* Y, byte* output)
 	{
 		for (j = 0; j < 8; j++)
 		{
-			if (((*X >> (7 - j)) & 1) == 1)
+			if (((*X >> (7 - j)) & 1))
 			{
 				xorBlock128(Z, V);
 			}
@@ -126,7 +126,6 @@ void AES128GCM::gMult(byte* X, byte* Y, byte* output)
 
 void AES128GCM::gHash(byte* H, byte* X, int lenX, byte* output)
 {
-	int c;
 	byte temp[16];
 	u128Copy(X, temp);
 	byte Y[16];
@@ -135,8 +134,8 @@ void AES128GCM::gHash(byte* H, byte* X, int lenX, byte* output)
 	gMult(H, temp, Y);
 	for (i = 1; i < lenX; i++)
 	{
-		c = i << 4;
-		xorBlock128(Y, X + c);
+		X += 16;
+		xorBlock128(Y, X);
 		gMult(Y, H, Y);
 	}
 
