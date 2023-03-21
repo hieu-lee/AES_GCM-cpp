@@ -247,7 +247,7 @@ GcmOutput AES128GCM::aes128gcmE(byte* IV, byte* _P, byte* _A, byte* K, int lenA,
 	scan += 8;
 	*(uint*)(Y0 + 8) = *(uint*)scan;
 	gCtr128(key, Y0, S, T);
-	return GcmOutput(C, T);
+	return GcmOutput(C, T, lenP);
 }
 
 byte* AES128GCM::aes128gcmD(byte* IV, byte* _C, byte* K, byte* _A, byte* _T, int lenA, int lenC)

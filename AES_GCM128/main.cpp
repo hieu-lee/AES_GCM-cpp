@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include "AES128GCM.h"
+#include "TestFunctions.h"
 
 long long testRun()
 {
@@ -30,7 +31,7 @@ long long testRun()
 
 void testPerformance() 
 {
-	const int runs = 1000;
+	const int runs = 1500;
 	long long averageTime = 0;
 	for (int _ = 0; _ < runs; _++) {
 		averageTime += testRun();

@@ -1,6 +1,4 @@
-#pragma once
-
-#define byte unsigned char
+typedef unsigned char byte;
 
 struct TupleU128
 {

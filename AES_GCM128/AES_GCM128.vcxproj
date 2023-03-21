@@ -131,12 +131,14 @@
     <ClCompile Include="AES128GCM.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="GcmOutput.cpp" />
+    <ClCompile Include="TestFunctions.cpp" />
     <ClCompile Include="TupleU128.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AES128.h" />
     <ClInclude Include="AES128GCM.h" />
     <ClInclude Include="GcmOutput.h" />
+    <ClInclude Include="TestFunctions.h" />
     <ClInclude Include="TupleU128.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

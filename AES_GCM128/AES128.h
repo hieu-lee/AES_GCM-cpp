@@ -1,9 +1,7 @@
-#pragma once
 #include "TupleU128.h"
 
-#define byte unsigned char
-#define ulong unsigned long long int
-#define uint unsigned int
+typedef unsigned long long int ulong;
+typedef unsigned int uint;
 
 class AES128
 {
