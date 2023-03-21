@@ -126,20 +126,19 @@ void AES128::mixColumns(byte* state)
 
 void AES128::invMixColumns(byte* state)
 {
-	byte u, v, i, c;
-	byte* ptr = state;
+	byte i, c;
+	unsigned int u;
+	byte* ptrByte;
+	unsigned int* ptrInt = (unsigned int*)state;
 	for (i = 0; i < 4; i++)
 	{
-		ptr += 4;
-		u = xTime(xTime((*ptr ^ *(ptr + 2))));
-		v = xTime(xTime(*(ptr + 1) ^ *(ptr + 3)));
-		*ptr ^= u;
-		ptr++;
-		*ptr ^= v;
-		ptr++;
-		*ptr ^= u;
-		ptr++;
-		*ptr ^= v;
+		ptrByte = (byte*)ptrInt;
+		u = xTime(xTime(*(ptrByte + 1) ^ *(ptrByte + 3)));
+		u <<= 8;
+		u ^= xTime(xTime((*ptrByte ^ *(ptrByte + 2))));
+		u = (u << 16) ^ u;
+		*ptrInt ^= u;
+		ptrInt++;
 	}
 	mixColumns(state);
 }

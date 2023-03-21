@@ -2,7 +2,7 @@
 #include <chrono>
 #include "AES128GCM.h"
 
-void testPerformance()
+long long testRun()
 {
 	byte K[16];
 	byte IV[12];
@@ -24,8 +24,19 @@ void testPerformance()
 	auto start = std::chrono::high_resolution_clock::now();
 	GcmOutput _ = AES128GCM::aes128gcmE(IV, P, A, K, 24, 1000000);
 	long long duration = (std::chrono::high_resolution_clock::now() - start).count();
-	std::cout << duration << std::endl;
 	delete[] P;
+	return duration;
+}
+
+void testPerformance() 
+{
+	const int runs = 1000;
+	long long averageTime = 0;
+	for (int _ = 0; _ < runs; _++) {
+		averageTime += testRun();
+	}
+	averageTime = averageTime / runs;
+	std::cout << averageTime << "ns" << std::endl;
 }
 
 int main()
