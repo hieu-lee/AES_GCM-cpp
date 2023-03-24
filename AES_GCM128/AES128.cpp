@@ -157,37 +157,37 @@ void AES128::keyExpansion(byte* roundKey, int round)
 {
 	byte i;
 	byte res[16];
-	byte* roundKeyCopy = roundKey;
+	uint* roundKey32 = (uint*)roundKey;
 	byte temp[4] = {
 		SBox[roundKey[13]],
 		SBox[roundKey[14]],
 		SBox[roundKey[15]],
 		SBox[roundKey[12]]
 	};
-	*(uint*)res = *(uint*)temp ^ *(uint*)roundKey;
-	byte* ptr = res + 4;
-	roundKey += 4;
+	*(uint*)res = *(uint*)temp ^ *roundKey32;
+	uint* ptr = (uint*)(res + 4);
+	roundKey32++;
 	*res ^= RCon[round - 1];
-	for (i = 4; i < 16; i++)
+	for (i = 1; i < 4; i++)
 	{
-		*ptr = *(ptr - 4) ^ *roundKey;
+		*ptr = *(ptr - 1) ^ *roundKey32;
 		ptr++;
-		roundKey++;
+		roundKey32++;
 	}
-	u128Copy(res, roundKeyCopy);
+	u128Copy(res, roundKey);
 }
 
 void AES128::invKeyExpansion(byte* roundKey, int round)
 {
 	byte res[16];
-	byte* ptr = res + 4;
-	byte* roundKeyCopy = roundKey;
+	uint* ptr = (uint*)(res + 4);
+	uint* roundKey32 = (uint*)roundKey;
 	byte i;
-	for (i = 4; i < 16; i++)
+	for (i = 1; i < 4; i++)
 	{
-		*ptr = *roundKey ^ *(roundKey + 4);
+		*ptr = *roundKey32 ^ *(roundKey32 + 1);
 		ptr++;
-		roundKey++;
+		roundKey32++;
 	}
 	byte temp[4] = {
 		SBox[res[13]],
@@ -195,9 +195,9 @@ void AES128::invKeyExpansion(byte* roundKey, int round)
 		SBox[res[15]],
 		SBox[res[12]]
 	};
-	*(uint*)res = *(uint*)temp ^ *(uint*)roundKeyCopy;
+	*(uint*)res = *(uint*)temp ^ *(uint*)roundKey;
 	res[0] ^= RCon[10 - round];
-	u128Copy(res, roundKeyCopy);
+	u128Copy(res, roundKey);
 }
 
 void AES128::printArray(byte* arr, int length)
