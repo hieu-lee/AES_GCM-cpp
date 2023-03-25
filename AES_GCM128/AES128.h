@@ -12,7 +12,6 @@ class AES128
 private:
 	static byte xTime(byte a);
 	static void u128Copy(byte* src, byte* dst);
-	static void subAndShiftRows(byte* state);
 	static void invSubAndShiftRows(byte* state);
 	static void mixColumns(byte* state);
 	static void invMixColumns(byte* state);

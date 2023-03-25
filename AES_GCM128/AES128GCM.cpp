@@ -1,16 +1,12 @@
 #include "AES128GCM.h"
 #include <string>
 #include <iostream>
+#include <emmintrin.h>
 using namespace std;
 
 void AES128GCM::u128Copy(byte* src, byte* dst)
 {
-	ulong* srcLong = (ulong*)src;
-	ulong* dstLong = (ulong*)dst;
-	*dstLong = *srcLong;
-	dstLong++;
-	srcLong++;
-	*dstLong = *srcLong;
+	_mm_storeu_si128((__m128i*)dst, _mm_loadu_si128((__m128i*)src));
 }
 
 void AES128GCM::inc32(byte* x)
@@ -61,12 +57,8 @@ void AES128GCM::rightShift(byte* v)
 
 void AES128GCM::xorBlock128(byte* dst, byte* src)
 {
-	ulong* dstLong = (ulong*)dst;
-	ulong* srcLong = (ulong*)src;
-	*dstLong ^= *srcLong;
-	dstLong++;
-	srcLong++;
-	*dstLong ^= *srcLong;
+	__m128i result = _mm_xor_si128(_mm_loadu_si128((__m128i*)dst), _mm_loadu_si128((__m128i*)src));
+	_mm_storeu_si128((__m128i*)dst, result);
 }
 
 void AES128GCM::concateBlock(ulong lengthA, ulong lengthB, byte* output)
@@ -160,7 +152,7 @@ void AES128GCM::gCtr(byte* K, byte* ICB, byte* X, int lenX, int lastLenX, byte* 
 	{
 		return;
 	}
-	int i, j, c;
+	int i, c;
 	byte tmp[16];
 	ulong* cipherLong;
 	ulong* XLong;

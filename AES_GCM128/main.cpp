@@ -2,6 +2,7 @@
 #include <chrono>
 #include "AES128GCM.h"
 #include "TestFunctions.h"
+#include <string>
 
 long long testRun()
 {
@@ -31,13 +32,19 @@ long long testRun()
 
 void testPerformance() 
 {
-	const int runs = 1500;
+	const int warmUps = 50;
+	const int runs = 300;
 	long long averageTime = 0;
+	for (int _ = 0; _ < warmUps; _++) {
+		testRun();
+	}
 	for (int _ = 0; _ < runs; _++) {
 		averageTime += testRun();
 	}
 	averageTime = averageTime / runs;
 	std::cout << averageTime << "ns" << std::endl;
+	std::string str;
+	std::getline(std::cin, str);
 }
 
 int main()

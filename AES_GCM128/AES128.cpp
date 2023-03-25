@@ -1,6 +1,8 @@
 #include "AES128.h"
 #include <string>
 #include <iostream>
+#include <emmintrin.h>
+#include <wmmintrin.h>
 using namespace std;
 
 const byte AES128::SBox[256] = {
@@ -52,35 +54,7 @@ byte AES128::xTime(byte a)
 
 void AES128::u128Copy(byte* src, byte* dst)
 {
-	ulong* srcLong = (ulong*)src;
-	ulong* dstLong = (ulong*)dst;
-	*dstLong = *srcLong;
-	dstLong++;
-	srcLong++;
-	*dstLong = *srcLong;
-}
-
-void AES128::subAndShiftRows(byte* state)
-{
-	byte temp[16] = {
-		SBox[state[0]],
-			SBox[state[5]],
-			SBox[state[10]],
-			SBox[state[15]],
-			SBox[state[4]],
-			SBox[state[9]],
-			SBox[state[14]],
-			SBox[state[3]],
-			SBox[state[8]],
-			SBox[state[13]],
-			SBox[state[2]],
-			SBox[state[7]],
-			SBox[state[12]],
-			SBox[state[1]],
-			SBox[state[6]],
-			SBox[state[11]]
-	};
-	u128Copy(temp, state);
+	_mm_storeu_si128((__m128i*)dst, _mm_loadu_si128((__m128i*)src));
 }
 
 void AES128::invSubAndShiftRows(byte* state)
@@ -109,7 +83,7 @@ void AES128::invSubAndShiftRows(byte* state)
 void AES128::mixColumns(byte* state)
 {
 	byte t, u, i, c, d, e, f;
-	for (i = 0; i < 4; i++) 
+	for (i = 0; i < 4; i++)
 	{
 		c = i << 2;
 		d = c + 1;
@@ -126,7 +100,7 @@ void AES128::mixColumns(byte* state)
 
 void AES128::invMixColumns(byte* state)
 {
-	byte i, c;
+	byte i;
 	unsigned int u;
 	byte* ptrByte;
 	unsigned int* ptrInt = (unsigned int*)state;
@@ -145,12 +119,8 @@ void AES128::invMixColumns(byte* state)
 
 void AES128::addRoundKey(byte* state, byte* roundKey)
 {
-	ulong* stateLong = (ulong*)state;
-	ulong* roundKeyLong = (ulong*)roundKey;
-	*stateLong ^= *roundKeyLong;
-	stateLong++;
-	roundKeyLong++;
-	*stateLong ^= *roundKeyLong;
+	__m128i result = _mm_xor_si128(_mm_loadu_si128((__m128i*)state), _mm_loadu_si128((__m128i*)roundKey));
+	_mm_storeu_si128((__m128i*)state, result);
 }
 
 void AES128::keyExpansion(byte* roundKey, int round)
@@ -212,43 +182,43 @@ void AES128::printArray(byte* arr, int length)
 
 void AES128::aes128EncryptPtr(byte* input, byte* key, byte* output)
 {
-	byte state[16];
 	byte roundKey[16];
-	u128Copy(input, state);
 	u128Copy(key, roundKey);
-	addRoundKey(state, roundKey);
+	__m128i cipher = _mm_loadu_si128((__m128i*) input);
+	__m128i memRoundKey = _mm_loadu_si128((__m128i*) roundKey);
+	cipher = _mm_xor_si128(cipher, memRoundKey);
 
 	for (int round = 1; round < 10; round++)
 	{
 		keyExpansion(roundKey, round);
-		subAndShiftRows(state);
-		mixColumns(state);
-		addRoundKey(state, roundKey);
+		memRoundKey = _mm_loadu_si128((__m128i*) roundKey);
+		cipher = _mm_aesenc_si128(cipher, memRoundKey);
 	}
 	keyExpansion(roundKey, 10);
-	subAndShiftRows(state);
-	addRoundKey(state, roundKey);
-	u128Copy(state, output);
+	memRoundKey = _mm_loadu_si128((__m128i*) roundKey);
+	cipher = _mm_aesenclast_si128(cipher, memRoundKey);
+	_mm_storeu_si128((__m128i*)output, cipher);
 }
 
 TupleU128 AES128::aes128E(byte* input, byte* key)
 {
 	byte state[16];
 	byte roundKey[16];
-	u128Copy(input, state);
 	u128Copy(key, roundKey);
-	addRoundKey(state, roundKey);
+	__m128i cipher = _mm_loadu_si128((__m128i*) input);
+	__m128i memRoundKey = _mm_loadu_si128((__m128i*) roundKey);
+	cipher = _mm_xor_si128(cipher, memRoundKey);
 
 	for (int round = 1; round < 10; round++)
 	{
 		keyExpansion(roundKey, round);
-		subAndShiftRows(state);
-		mixColumns(state);
-		addRoundKey(state, roundKey);
+		memRoundKey = _mm_loadu_si128((__m128i*) roundKey);
+		cipher = _mm_aesenc_si128(cipher, memRoundKey);
 	}
 	keyExpansion(roundKey, 10);
-	subAndShiftRows(state);
-	addRoundKey(state, roundKey);
+	memRoundKey = _mm_loadu_si128((__m128i*) roundKey);
+	cipher = _mm_aesenclast_si128(cipher, memRoundKey);
+	_mm_storeu_si128((__m128i*)state, cipher);
 	return TupleU128(state, roundKey);
 }
 
@@ -256,11 +226,8 @@ TupleU128 AES128::aes128D(byte* cipherText, byte* key)
 {
 	byte state[16];
 	byte roundKey[16];
-	for (byte i = 0; i < 16; i++)
-	{
-		roundKey[i] = key[i];
-		state[i] = cipherText[i];
-	}
+	u128Copy(cipherText, state);
+	u128Copy(key, roundKey);
 	addRoundKey(state, roundKey);
 	invSubAndShiftRows(state);
 	invKeyExpansion(roundKey, 1);
